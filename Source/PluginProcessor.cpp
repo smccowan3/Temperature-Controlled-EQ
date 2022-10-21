@@ -11,21 +11,26 @@
 
 //==============================================================================
 TemperatureSliderAudioProcessor::TemperatureSliderAudioProcessor()
-#ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
+
+:AudioProcessor (BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+                 .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
 #endif
+                 .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
+#endif
+                 )
+#ifndef JucePlugin_PreferredChannelConfigurations
+
+#endif
+//audioSource(audioSource)
 {
 }
 
 TemperatureSliderAudioProcessor::~TemperatureSliderAudioProcessor()
 {
+    
+    
 }
 
 //==============================================================================
@@ -93,6 +98,7 @@ void TemperatureSliderAudioProcessor::changeProgramName (int index, const juce::
 //==============================================================================
 void TemperatureSliderAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
+
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
 }
@@ -183,9 +189,71 @@ void TemperatureSliderAudioProcessor::setStateInformation (const void* data, int
     // whose contents will have been created by the getStateInformation() call.
 }
 
+
+//void TemperatureSliderAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
+//{
+//
+//}
+
 //==============================================================================
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new TemperatureSliderAudioProcessor();
+}
+
+
+Audio::Audio()
+{
+    DBG("hello");
+    setOpaque (true);
+    setAudioChannels (2, 0);  // we want a couple of input channels but no outputs
+    
+    setSize (700, 500);
+}
+
+Audio::~Audio()
+{
+    shutdownAudio();
+}
+
+
+void Audio::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
+{
+    if (bufferToFill.buffer->getNumChannels() > 0)
+    {
+        auto* channelData = bufferToFill.buffer->getReadPointer (0, bufferToFill.startSample);
+
+        for (auto i = 0; i < bufferToFill.numSamples; ++i)
+            pushNextSampleIntoFifo (channelData[i]);
+    }
+}
+
+void Audio::pushNextSampleIntoFifo (float sample) noexcept
+{
+    // if the fifo contains enough data, set a flag to say
+    // that the next line should now be rendered..
+    if (fifoIndex == fftSize)       // [8]
+    {
+        if (! nextFFTBlockReady)    // [9]
+        {
+            std::fill (fftData.begin(), fftData.end(), 0.0f);
+            std::copy (fifo.begin(), fifo.end(), fftData.begin());
+            nextFFTBlockReady = true;
+        }
+
+        fifoIndex = 0;
+    }
+
+    fifo[(size_t) fifoIndex++] = sample; // [9]
+}
+//
+void Audio::prepareToPlay(int samplesPerBlock,double sampleRate)
+{
+    
+}
+
+void Audio::releaseResources()
+{
+    
 }

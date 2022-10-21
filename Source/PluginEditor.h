@@ -16,7 +16,9 @@
 //==============================================================================
 /**
 */
-class TemperatureSliderAudioProcessorEditor  : public juce::AudioProcessorEditor
+
+
+class TemperatureSliderAudioProcessorEditor  : public juce::AudioProcessorEditor, public juce::Timer
 {
 public:
     TemperatureSliderAudioProcessorEditor (TemperatureSliderAudioProcessor&);
@@ -45,11 +47,15 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
-
+    void timerCallback() override;
+    void drawNextLineOfSpectrogram();
+    
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
-    TemperatureSliderAudioProcessor& audioProcessor;
-
+    TemperatureSliderAudioProcessor& audioProcessorPtr;
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TemperatureSliderAudioProcessorEditor)
+
 };
+

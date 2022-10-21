@@ -13,6 +13,32 @@
 //==============================================================================
 /**
 */
+
+class Audio: public juce::AudioAppComponent
+{
+
+public:
+    Audio();
+    ~Audio();
+    void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
+    void pushNextSampleIntoFifo (float sample) noexcept;
+    static constexpr auto fftOrder = 11;
+    static constexpr auto fftSize = 1 << fftOrder;
+    juce::dsp::FFT forwardFFT {fftOrder};
+    juce::Image spectrogramImage{juce::Image::RGB, 512, 512, true};
+
+    std::array<float, fftSize> fifo;
+    std::array<float, fftSize * 2> fftData;
+    int fifoIndex = 0;
+    bool nextFFTBlockReady = false;
+
+    void prepareToPlay(int samplesPerBlock,double sampleRate) override;
+    void releaseResources() override;
+
+};
+
+
+
 class TemperatureSliderAudioProcessor  : public juce::AudioProcessor
 {
 public:
@@ -21,7 +47,9 @@ public:
     ~TemperatureSliderAudioProcessor() override;
 
     //==============================================================================
+
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
+    
     void releaseResources() override;
 
    #ifndef JucePlugin_PreferredChannelConfigurations
@@ -52,8 +80,15 @@ public:
     //==============================================================================
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    Audio audioSource;
+    
 
 private:
     //==============================================================================
+    
+    
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TemperatureSliderAudioProcessor)
 };
+
