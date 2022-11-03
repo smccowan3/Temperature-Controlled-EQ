@@ -203,7 +203,7 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 }
 
 
-Audio::Audio()
+Audio::Audio(): forwardFFT(fftOrder), window(fftSize, juce::dsp::WindowingFunction<float>::hann)
 {
     DBG("hello");
     setOpaque (true);
@@ -219,34 +219,32 @@ Audio::~Audio()
 
 
 void Audio::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
-{
-    if (bufferToFill.buffer->getNumChannels() > 0)
     {
-        auto* channelData = bufferToFill.buffer->getReadPointer (0, bufferToFill.startSample);
-
-        for (auto i = 0; i < bufferToFill.numSamples; ++i)
-            pushNextSampleIntoFifo (channelData[i]);
+        if (bufferToFill.buffer->getNumChannels() > 0)
+        {
+            auto* channelData = bufferToFill.buffer->getReadPointer (0, bufferToFill.startSample);
+ 
+            for (auto i = 0; i < bufferToFill.numSamples; ++i)
+                pushNextSampleIntoFifo (channelData[i]);
+        }
     }
-}
 
 void Audio::pushNextSampleIntoFifo (float sample) noexcept
-{
-    // if the fifo contains enough data, set a flag to say
-    // that the next line should now be rendered..
-    if (fifoIndex == fftSize)       // [8]
     {
-        if (! nextFFTBlockReady)    // [9]
+        if (fifoIndex == fftSize)
         {
-            std::fill (fftData.begin(), fftData.end(), 0.0f);
-            std::copy (fifo.begin(), fifo.end(), fftData.begin());
-            nextFFTBlockReady = true;
+            if (! nextFFTBlockReady)
+            {
+                juce::zeromem (fftData, sizeof (fftData));
+                memcpy (fftData, fifo, sizeof (fifo));
+                nextFFTBlockReady = true;
+            }
+ 
+            fifoIndex = 0;
         }
-
-        fifoIndex = 0;
+ 
+        fifo[fifoIndex++] = sample;
     }
-
-    fifo[(size_t) fifoIndex++] = sample; // [9]
-}
 //
 void Audio::prepareToPlay(int samplesPerBlock,double sampleRate)
 {

@@ -16,24 +16,29 @@
 
 class Audio: public juce::AudioAppComponent
 {
-
 public:
+    enum
+    {
+        fftOrder = 11,
+        fftSize = 1 << fftOrder,
+        scopeSize = 512
+    };
     Audio();
     ~Audio();
     void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
     void pushNextSampleIntoFifo (float sample) noexcept;
-    static constexpr auto fftOrder = 11;
-    static constexpr auto fftSize = 1 << fftOrder;
-    juce::dsp::FFT forwardFFT {fftOrder};
-    juce::Image spectrogramImage{juce::Image::RGB, 512, 512, true};
-
-    std::array<float, fftSize> fifo;
-    std::array<float, fftSize * 2> fftData;
+    juce::dsp::FFT forwardFFT;
+    juce::dsp::WindowingFunction<float> window;
+    float fifo [fftSize];
+    float fftData [2*fftSize];
     int fifoIndex = 0;
     bool nextFFTBlockReady = false;
-
+    float scopeData[scopeSize];
     void prepareToPlay(int samplesPerBlock,double sampleRate) override;
     void releaseResources() override;
+    
+    
+    
 
 };
 

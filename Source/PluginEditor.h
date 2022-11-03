@@ -48,7 +48,8 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
     void timerCallback() override;
-    void drawNextLineOfSpectrogram();
+    void drawNextFrameOfSpectrum();
+    void drawFrame (juce::Graphics& g);
     
 private:
     // This reference is provided as a quick way for your editor to

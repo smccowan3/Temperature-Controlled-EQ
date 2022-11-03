@@ -61,9 +61,8 @@ void TemperatureSliderAudioProcessorEditor::paint (juce::Graphics& g)
     g.fillAll (juce::Colours::black);
 
     g.setOpacity (1.0f);
-    g.drawImage (audioProcessorPtr.audioSource.spectrogramImage, getLocalBounds().toFloat());
+    drawFrame(g);
 }
-
 void TemperatureSliderAudioProcessorEditor::resized()
 {
     // This is generally where you'll want to lay out the positions of any
@@ -108,31 +107,29 @@ void TemperatureSliderAudioProcessorEditor::drawCMapDot (const juce::MouseEvent 
 }
 
 
-void TemperatureSliderAudioProcessorEditor::drawNextLineOfSpectrogram()
+void TemperatureSliderAudioProcessorEditor::drawNextFrameOfSpectrum()
     {
-    DBG("drawingNextLine");
-        
-        auto rightHandEdge = audioProcessorPtr.audioSource.spectrogramImage.getWidth() - 1;
-        auto imageHeight   = audioProcessorPtr.audioSource.spectrogramImage.getHeight();
-
-        // first, shuffle our image leftwards by 1 pixel..
-    audioProcessorPtr.audioSource.spectrogramImage.moveImageSection (0, 0, 1, 0, rightHandEdge, imageHeight);         // [1]
-
-        // then render our FFT data..
-    audioProcessorPtr.audioSource.forwardFFT.performFrequencyOnlyForwardTransform (audioProcessorPtr.audioSource.fftData.data());                   // [2]
-
-        // find the range of values produced, so we can scale our rendering to
-        // show up the detail clearly
-        auto maxLevel = juce::FloatVectorOperations::findMinAndMax (audioProcessorPtr.audioSource.fftData.data(), audioProcessorPtr.audioSource.fftSize / 2); // [3]
-
-        for (auto y = 1; y < imageHeight; ++y)                                              // [4]
-        {
-            auto skewedProportionY = 1.0f - std::exp (std::log ((float) y / (float) imageHeight) * 0.2f);
-            auto fftDataIndex = (size_t) juce::jlimit (0, audioProcessorPtr.audioSource.fftSize / 2, (int) (skewedProportionY * audioProcessorPtr.audioSource.fftSize / 2));
-            auto level = juce::jmap (audioProcessorPtr.audioSource.fftData[fftDataIndex], 0.0f, juce::jmax (maxLevel.getEnd(), 1e-5f), 0.0f, 1.0f);
-
-            audioProcessorPtr.audioSource.spectrogramImage.setPixelAt (rightHandEdge, y, juce::Colour::fromHSV (level, 1.0f, level, 1.0f)); // [5]
-        }
+    // first apply a windowing function to our data
+    
+        audioProcessorPtr.audioSource.window.multiplyWithWindowingTable (audioProcessorPtr.audioSource.fftData, audioProcessorPtr.audioSource.fftSize);
+     
+            // then render our FFT data..
+        audioProcessorPtr.audioSource.forwardFFT.performFrequencyOnlyForwardTransform (audioProcessorPtr.audioSource.fftData);
+     
+            auto mindB = -100.0f;
+            auto maxdB =    0.0f;
+            auto scopeSize = audioProcessorPtr.audioSource.scopeSize;
+            auto fftSize = audioProcessorPtr.audioSource.fftSize;
+            for (int i = 0; i < scopeSize; ++i)                         // [3]
+            {
+                auto skewedProportionX = 1.0f - std::exp (std::log (1.0f - (float) i / (float) scopeSize) * 0.2f);
+                auto fftDataIndex = juce::jlimit (0, fftSize / 2, (int) (skewedProportionX * (float) fftSize * 0.5f));
+                auto level = juce::jmap (juce::jlimit (mindB, maxdB, juce::Decibels::gainToDecibels (audioProcessorPtr.audioSource.fftData[fftDataIndex])
+                                                                   - juce::Decibels::gainToDecibels ((float) fftSize)),
+                                         mindB, maxdB, 0.0f, 1.0f);
+     
+                audioProcessorPtr.audioSource.scopeData[i] = level;                                   // [4]
+            }
     }
 
 
@@ -143,8 +140,22 @@ void TemperatureSliderAudioProcessorEditor::timerCallback()
     DBG("timer callback");
     if (audioProcessorPtr.audioSource.nextFFTBlockReady)
     {
-        drawNextLineOfSpectrogram();
+        drawNextFrameOfSpectrum();
         audioProcessorPtr.audioSource.nextFFTBlockReady = false;
         repaint();
     }
 }
+
+void TemperatureSliderAudioProcessorEditor::drawFrame (juce::Graphics& g)
+    {
+        for (int i = 1; i < audioProcessorPtr.audioSource.scopeSize; ++i)
+        {
+            auto width  = getLocalBounds().getWidth();
+            auto height = getLocalBounds().getHeight();
+ 
+            g.drawLine ({ (float) juce::jmap (i - 1, 0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width),
+                                  juce::jmap (audioProcessorPtr.audioSource.scopeData[i - 1], 0.0f, 1.0f, (float) height, 0.0f),
+                          (float) juce::jmap (i,     0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width),
+                                  juce::jmap (audioProcessorPtr.audioSource.scopeData[i],     0.0f, 1.0f, (float) height, 0.0f) });
+        }
+    }
