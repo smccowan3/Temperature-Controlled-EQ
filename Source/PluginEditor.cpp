@@ -24,7 +24,7 @@ TemperatureSliderAudioProcessorEditor::TemperatureSliderAudioProcessorEditor (Te
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (WIDTH, HEIGHT);
-    startTimerHz(60);
+    startTimerHz(30);
 }
 
 TemperatureSliderAudioProcessorEditor::~TemperatureSliderAudioProcessorEditor()
@@ -39,28 +39,30 @@ void TemperatureSliderAudioProcessorEditor::paint (juce::Graphics& g)
     
     
     
-//
-//    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
-//
-//    g.setColour (juce::Colours::white);
-//    g.setFont (15.0f);
-//
-//    g.drawText ("Temperature Input", 100, 700, 200, 100, juce::Justification::centred, 1);
-//    g.drawText ("X: " + std::to_string(xPos), 80, 720, 200, 100, juce::Justification::centred, 1);
-//    g.drawText ("Y: " + std::to_string(yPos), 150, 720, 200, 100, juce::Justification::centred, 1);
-//
-//    g.drawImage(colorMap,cMapStartX, cMapStartY, cMapXLength, cMapYLength, 0, 0, colorMap.getWidth(), colorMap.getHeight(), false);
-//    g.drawEllipse(xPos, yPos, 10, 10, 2);
-//    //g.fillAll(juce::Colours::darkcyan);
-//    g.setColour(juce::Colours::darkslategrey);
-//    g.fillRect(20, 20, WIDTH -40, cMapStartY -40);
-//    g.setColour(juce::Colours::darkmagenta);
-//    //lines around the rectangle
-//    g.drawRect(20, 20, WIDTH-40, cMapStartY -40);
-//
-    g.fillAll (juce::Colours::black);
 
+    g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
+
+    g.setColour (juce::Colours::white);
+    g.setFont (15.0f);
+
+    g.drawText ("Temperature Input", 100, 700, 200, 100, juce::Justification::centred, 1);
+    g.drawText ("X: " + std::to_string(xPos), 80, 720, 200, 100, juce::Justification::centred, 1);
+    g.drawText ("Y: " + std::to_string(yPos), 150, 720, 200, 100, juce::Justification::centred, 1);
+    
+    g.drawImage(colorMap,cMapStartX, cMapStartY, cMapXLength, cMapYLength, 0, 0, colorMap.getWidth(), colorMap.getHeight(), false);
+    g.drawEllipse(xPos, yPos, 10, 10, 2);
+    //g.fillAll(juce::Colours::darkcyan);
+    g.setColour(juce::Colours::darkslategrey);
+    g.fillRect(20, 20, WIDTH-40, cMapStartY -140);
+    g.setColour(juce::Colours::darkmagenta);
+    //lines around the rectangle
+    g.drawRect(20, 20, WIDTH-40, cMapStartY -140);
+    g.setColour (juce::Colours::white);
+    g.drawText("Frequency (Hz)", WIDTH/2-100, cMapStartY+cMapYLength-230, 200,  100, juce::Justification::centred);
+
+    //g.fillAll (juce::Colours::black);
     g.setOpacity (1.0f);
+    g.setColour (juce::Colours::white);
     drawFrame(g);
 }
 void TemperatureSliderAudioProcessorEditor::resized()
@@ -122,13 +124,17 @@ void TemperatureSliderAudioProcessorEditor::drawNextFrameOfSpectrum()
             auto fftSize = audioProcessorPtr.audioSource.fftSize;
             for (int i = 0; i < scopeSize; ++i)                         // [3]
             {
+                
                 auto skewedProportionX = 1.0f - std::exp (std::log (1.0f - (float) i / (float) scopeSize) * 0.2f);
                 auto fftDataIndex = juce::jlimit (0, fftSize / 2, (int) (skewedProportionX * (float) fftSize * 0.5f));
+                //DBG(audioProcessorPtr.audioSource.fftData[fftDataIndex]);
                 auto level = juce::jmap (juce::jlimit (mindB, maxdB, juce::Decibels::gainToDecibels (audioProcessorPtr.audioSource.fftData[fftDataIndex])
                                                                    - juce::Decibels::gainToDecibels ((float) fftSize)),
                                          mindB, maxdB, 0.0f, 1.0f);
      
-                audioProcessorPtr.audioSource.scopeData[i] = level;                                   // [4]
+                audioProcessorPtr.audioSource.scopeData[i] = level;
+                // [4]
+                //DBG(level);
             }
     }
 
@@ -137,7 +143,7 @@ void TemperatureSliderAudioProcessorEditor::drawNextFrameOfSpectrum()
 
 void TemperatureSliderAudioProcessorEditor::timerCallback()
 {
-    DBG("timer callback");
+    //DBG("timer callback");
     if (audioProcessorPtr.audioSource.nextFFTBlockReady)
     {
         drawNextFrameOfSpectrum();
@@ -148,14 +154,25 @@ void TemperatureSliderAudioProcessorEditor::timerCallback()
 
 void TemperatureSliderAudioProcessorEditor::drawFrame (juce::Graphics& g)
     {
+    //DBG("Drawing frames");
+    g.setColour(juce::Colours::white);
         for (int i = 1; i < audioProcessorPtr.audioSource.scopeSize; ++i)
         {
-            auto width  = getLocalBounds().getWidth();
-            auto height = getLocalBounds().getHeight();
+            auto width  = WIDTH-50;
+            auto height = HEIGHT-40;
  
-            g.drawLine ({ (float) juce::jmap (i - 1, 0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width),
-                                  juce::jmap (audioProcessorPtr.audioSource.scopeData[i - 1], 0.0f, 1.0f, (float) height, 0.0f),
-                          (float) juce::jmap (i,     0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width),
-                                  juce::jmap (audioProcessorPtr.audioSource.scopeData[i],     0.0f, 1.0f, (float) height, 0.0f) });
+            g.drawLine ({ (float) juce::jmap (i - 1+20, 0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width),
+                                  juce::jmap (audioProcessorPtr.audioSource.scopeData[i - 1], 0.0f, 1.0f, (float) height, 0.0f)-300,
+                          (float) juce::jmap (i+20,     0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width),
+                                  juce::jmap (audioProcessorPtr.audioSource.scopeData[i],     0.0f, 1.0f, (float) height, 0.0f)-300 });
+//            DBG("x1: ");
+//            DBG((float) juce::jmap (i - 1, 0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width));
+//            DBG("y1: ");
+//            DBG(juce::jmap (audioProcessorPtr.audioSource.scopeData[i - 1], 0.0f, 1.0f, (float) height, 0.0f));
+//            DBG("x2: ");
+//            DBG((float) juce::jmap (i,     0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width));
+//            DBG("y2: ");
+//            DBG(juce::jmap (audioProcessorPtr.audioSource.scopeData[i],     0.0f, 1.0f, (float) height, 0.0f));
+            
         }
     }

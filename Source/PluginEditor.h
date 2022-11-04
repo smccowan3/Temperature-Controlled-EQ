@@ -32,14 +32,14 @@ public:
     
     int cMapStartX {0};
     int cMapXLength {WIDTH};
-    int cMapStartY{500};
+    int cMapStartY{600};
     int cMapYLength{HEIGHT/10};
     
     int cMapParam{1};
     
     
     int xPos{1};
-    int yPos{500};
+    int yPos{cMapStartY+1};
     int mouseX{0};
     int mouseY{0};
     bool isEntered{false};
