@@ -9,6 +9,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+ChainSettings settingsGlobal;
 //==============================================================================
 TemperatureSliderAudioProcessor::TemperatureSliderAudioProcessor()
 
@@ -19,12 +20,15 @@ TemperatureSliderAudioProcessor::TemperatureSliderAudioProcessor()
 #endif
                  .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-                 )
+                 ),
 #ifndef JucePlugin_PreferredChannelConfigurations
 
 #endif
+chainSettings(settingsGlobal)
 //audioSource(audioSource)
 {
+    
+    
 }
 
 TemperatureSliderAudioProcessor::~TemperatureSliderAudioProcessor()
@@ -313,9 +317,8 @@ void Audio::releaseResources()
 }
 
 
-ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
+void getChainSettings(juce::AudioProcessorValueTreeState& apvts, ChainSettings &settings)
 {
-    ChainSettings settings;
     
     settings.lowCutFreq = apvts.getRawParameterValue("LowCut Freq")->load();
     settings.highCutFreq = apvts.getRawParameterValue("HighCut Freq")->load();
@@ -328,8 +331,6 @@ ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts)
     settings.lowCutBypassed = apvts.getRawParameterValue("LowCut Bypassed")->load() > 0.5f;
     settings.peakBypassed = apvts.getRawParameterValue("Peak Bypassed")->load() > 0.5f;
     settings.highCutBypassed = apvts.getRawParameterValue("HighCut Bypassed")->load() > 0.5f;
-    
-    return settings;
 }
 
 Coefficients makePeakFilter(const ChainSettings& chainSettings, double sampleRate)
@@ -385,7 +386,7 @@ void TemperatureSliderAudioProcessor::updateHighCutFilters(const ChainSettings &
 
 void TemperatureSliderAudioProcessor::updateFilters()
 {
-    auto chainSettings = getChainSettings(apvts);
+    getChainSettings(apvts,chainSettings);
     
     updateLowCutFilters(chainSettings);
     updatePeakFilter(chainSettings);

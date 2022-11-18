@@ -106,8 +106,8 @@ void TemperatureSliderAudioProcessorEditor::drawCMapDot (const juce::MouseEvent 
         cMapParam = event.x - cMapStartX;
         repaint();
     }
+    
 }
-
 
 void TemperatureSliderAudioProcessorEditor::drawNextFrameOfSpectrum()
     {

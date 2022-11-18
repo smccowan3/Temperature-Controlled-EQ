@@ -189,7 +189,7 @@ struct ChainSettings
     bool lowCutBypassed { false }, peakBypassed { false }, highCutBypassed { false };
 };
 
-ChainSettings getChainSettings(juce::AudioProcessorValueTreeState& apvts);
+void getChainSettings(juce::AudioProcessorValueTreeState& apvts, ChainSettings &chainSettings);
 
 using Filter = juce::dsp::IIR::Filter<float>;
 
@@ -311,6 +311,7 @@ public:
     SingleChannelSampleFifo<BlockType> rightChannelFifo { Channel::Right };
     
     Audio audioSource;
+    ChainSettings &chainSettings;
     
 
 private:
