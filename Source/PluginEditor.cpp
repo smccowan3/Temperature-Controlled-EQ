@@ -120,12 +120,13 @@ void TemperatureSliderAudioProcessorEditor::processParameter()
     
     if (xPos > cMapXLength/2+allowableNeutralRegion)
     {
-        scaleFactor = (xPos - cMapXLength/2+allowableNeutralRegion)/cMapXLength;
+        scaleFactor = (xPos - allowableNeutralRegion - cMapXLength/2);
+        scaleFactor /= (cMapXLength/2);
         DBG("hot. processing low boost.");
-        audioProcessorPtr.chainSettings.peakFreq = 500.f;
-        audioProcessorPtr.chainSettings.peakQuality = scaleFactor * qMax;
-        audioProcessorPtr.chainSettings.peakGainInDecibels = scaleFactor * gainMax;
-        
+        audioProcessorPtr.receivedPeakFreq = 500.f;
+        audioProcessorPtr.receivedPeakQ = qMax -(scaleFactor * qMax) + 0.001;
+        audioProcessorPtr.receivedPeakGain = scaleFactor * gainMax;
+        audioProcessorPtr.receivedInputFromCMap = true;
         
         
     }
@@ -136,6 +137,11 @@ void TemperatureSliderAudioProcessorEditor::processParameter()
         audioProcessorPtr.chainSettings.highShelfPeakFreq = 4000.f;
         audioProcessorPtr.chainSettings.highShelfQ = scaleFactor * qMax;
         audioProcessorPtr.chainSettings.highShelfGain = scaleFactor * gainMax;
+        
+        audioProcessorPtr.receivedPeakFreq = 1;
+        audioProcessorPtr.receivedPeakQ = 1;
+        audioProcessorPtr.receivedPeakGain = 1;
+        audioProcessorPtr.receivedInputFromCMap = true;
     }
     else
     {
@@ -147,16 +153,21 @@ void TemperatureSliderAudioProcessorEditor::processParameter()
     }
     
     audioProcessorPtr.updateFilters();
+    
+    
 }
 
 void TemperatureSliderAudioProcessorEditor::drawNextFrameOfSpectrum()
     {
     // first apply a windowing function to our data
     
-        audioProcessorPtr.audioSource.window.multiplyWithWindowingTable (audioProcessorPtr.audioSource.fftData, audioProcessorPtr.audioSource.fftSize);
+//LEFT FIRSTTTTTT
+    
+    
+        audioProcessorPtr.audioSource.window.multiplyWithWindowingTable (audioProcessorPtr.audioSource.leftfftData, audioProcessorPtr.audioSource.fftSize);
      
             // then render our FFT data..
-        audioProcessorPtr.audioSource.forwardFFT.performFrequencyOnlyForwardTransform (audioProcessorPtr.audioSource.fftData);
+        audioProcessorPtr.audioSource.forwardFFT.performFrequencyOnlyForwardTransform (audioProcessorPtr.audioSource.leftfftData);
      
             auto mindB = -100.0f;
             auto maxdB =    0.0f;
@@ -168,14 +179,37 @@ void TemperatureSliderAudioProcessorEditor::drawNextFrameOfSpectrum()
                 auto skewedProportionX = 1.0f - std::exp (std::log (1.0f - (float) i / (float) scopeSize) * 0.2f);
                 auto fftDataIndex = juce::jlimit (0, fftSize / 2, (int) (skewedProportionX * (float) fftSize * 0.5f));
                 //DBG(audioProcessorPtr.audioSource.fftData[fftDataIndex]);
-                auto level = juce::jmap (juce::jlimit (mindB, maxdB, juce::Decibels::gainToDecibels (audioProcessorPtr.audioSource.fftData[fftDataIndex])
+                auto level = juce::jmap (juce::jlimit (mindB, maxdB, juce::Decibels::gainToDecibels (audioProcessorPtr.audioSource.leftfftData[fftDataIndex])
                                                                    - juce::Decibels::gainToDecibels ((float) fftSize)),
                                          mindB, maxdB, 0.0f, 1.0f);
      
-                audioProcessorPtr.audioSource.scopeData[i] = level;
+                audioProcessorPtr.audioSource.leftscopeData[i] = level;
                 // [4]
                 //DBG(level);
             }
+    //RIGHT FIRSTTTTTT
+    audioProcessorPtr.audioSource.window.multiplyWithWindowingTable (audioProcessorPtr.audioSource.rightfftData, audioProcessorPtr.audioSource.fftSize);
+ 
+        // then render our FFT data..
+    audioProcessorPtr.audioSource.forwardFFT.performFrequencyOnlyForwardTransform (audioProcessorPtr.audioSource.rightfftData);
+ 
+        for (int i = 0; i < scopeSize; ++i)                         // [3]
+        {
+            
+            auto skewedProportionX = 1.0f - std::exp (std::log (1.0f - (float) i / (float) scopeSize) * 0.2f);
+            auto fftDataIndex = juce::jlimit (0, fftSize / 2, (int) (skewedProportionX * (float) fftSize * 0.5f));
+            //DBG(audioProcessorPtr.audioSource.fftData[fftDataIndex]);
+            auto level = juce::jmap (juce::jlimit (mindB, maxdB, juce::Decibels::gainToDecibels (audioProcessorPtr.audioSource.rightfftData[fftDataIndex])
+                                                               - juce::Decibels::gainToDecibels ((float) fftSize)),
+                                     mindB, maxdB, 0.0f, 1.0f);
+ 
+            audioProcessorPtr.audioSource.rightscopeData[i] = level;
+            // [4]
+            //DBG(level);
+        }
+    
+    
+    
     }
 
 
@@ -202,9 +236,9 @@ void TemperatureSliderAudioProcessorEditor::drawFrame (juce::Graphics& g)
             auto height = HEIGHT-40;
  
             g.drawLine ({ (float) juce::jmap (i - 1+20, 0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width),
-                                  juce::jmap (audioProcessorPtr.audioSource.scopeData[i - 1], 0.0f, 1.0f, (float) height, 0.0f)-300,
+                                  juce::jmap (audioProcessorPtr.audioSource.leftscopeData[i - 1], 0.0f, 1.0f, (float) height, 0.0f)-300,
                           (float) juce::jmap (i+20,     0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width),
-                                  juce::jmap (audioProcessorPtr.audioSource.scopeData[i],     0.0f, 1.0f, (float) height, 0.0f)-300 });
+                                  juce::jmap (audioProcessorPtr.audioSource.leftscopeData[i],     0.0f, 1.0f, (float) height, 0.0f)-300 });
 //            DBG("x1: ");
 //            DBG((float) juce::jmap (i - 1, 0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width));
 //            DBG("y1: ");
@@ -215,4 +249,28 @@ void TemperatureSliderAudioProcessorEditor::drawFrame (juce::Graphics& g)
 //            DBG(juce::jmap (audioProcessorPtr.audioSource.scopeData[i],     0.0f, 1.0f, (float) height, 0.0f));
             
         }
+    
+    /*for (int i = 1; i < audioProcessorPtr.audioSource.scopeSize; ++i)
+    {
+        auto width  = WIDTH-50;
+        auto height = HEIGHT-40;
+
+        g.drawLine ({ (float) juce::jmap (i - 1+20, 0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width),
+                              juce::jmap (audioProcessorPtr.audioSource.rightscopeData[i - 1], 0.0f, 1.0f, (float) height, 0.0f)-300,
+                      (float) juce::jmap (i+20,     0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width),
+                              juce::jmap (audioProcessorPtr.audioSource.rightscopeData[i],     0.0f, 1.0f, (float) height, 0.0f)-300 });
+//            DBG("x1: ");
+//            DBG((float) juce::jmap (i - 1, 0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width));
+//            DBG("y1: ");
+//            DBG(juce::jmap (audioProcessorPtr.audioSource.scopeData[i - 1], 0.0f, 1.0f, (float) height, 0.0f));
+//            DBG("x2: ");
+//            DBG((float) juce::jmap (i,     0, audioProcessorPtr.audioSource.scopeSize - 1, 0, width));
+//            DBG("y2: ");
+//            DBG(juce::jmap (audioProcessorPtr.audioSource.scopeData[i],     0.0f, 1.0f, (float) height, 0.0f));
+        
+    }
+    */
+    
+    
+    
     }

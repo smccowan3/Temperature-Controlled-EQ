@@ -26,17 +26,20 @@ public:
     Audio();
     ~Audio();
     void getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill) override;
-    void pushNextSampleIntoFifo (float sample) noexcept;
+    void pushNextSampleIntoFifo (float sample, std::string channel) noexcept;
     juce::dsp::FFT forwardFFT;
     juce::dsp::WindowingFunction<float> window;
-    float fifo [fftSize];
-    float fftData [2 * fftSize];
+    float leftfifo [fftSize];
+    float rightfifo [fftSize];
+    float leftfftData [2 * fftSize];
+    float rightfftData [2 * fftSize];
     int fifoIndex = 0;
     bool nextFFTBlockReady = false;
-    float scopeData [scopeSize];
+    float rightscopeData [scopeSize];
+    float leftscopeData [scopeSize];
     void prepareToPlay(int samplesPerBlock,double sampleRate) override;
     void releaseResources() override;
-    
+    void processProcessedData(juce::dsp::AudioBlock<float> block, std::string channel);
     
     
     
@@ -53,12 +56,12 @@ enum Slope
 
 struct ChainSettings
 {
-    float peakFreq { 0 }, peakGainInDecibels{ 0 }, peakQuality {1.f};
-    float lowCutFreq { 0 }, highCutFreq { 0 };
+    float peakFreq { 1 }, peakGainInDecibels{ 0 }, peakQuality {1.f};
+    float lowCutFreq { 1 }, highCutFreq { 1 };
     
     Slope lowCutSlope { Slope::Slope_12 }, highCutSlope { Slope::Slope_12 };
     
-    float highShelfGain {0}, highShelfQ{1.f}, highShelfPeakFreq{0};
+    float highShelfGain {0}, highShelfQ{1.f}, highShelfPeakFreq{1};
     
     
     
@@ -195,14 +198,20 @@ public:
     ChainSettings &chainSettings;
     void updateFilters();
     
+    void updatePeakFilter(const ChainSettings& chainSettings);
 
+    bool receivedInputFromCMap {false};
+    float receivedPeakGain;
+    float receivedPeakFreq;
+    float receivedPeakQ;
+    
+    
 private:
     //==============================================================================
     
     MonoChain leftChain, rightChain;
         
-    void updatePeakFilter(const ChainSettings& chainSettings);
-
+    
     
     void updateHighShelfFilter(const ChainSettings & chainSettings);
     

@@ -195,14 +195,25 @@ void TemperatureSliderAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
     
    auto leftBlock = block.getSingleChannelBlock(0);
    auto rightBlock = block.getSingleChannelBlock(1);
+
+    
    
    juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
    juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
    
-   leftChain.process(leftContext);
-   rightChain.process(rightContext);
-
-
+    DBG("updated settings are: ");
+    DBG(chainSettings.peakQuality);
+    DBG(chainSettings.peakFreq);
+    DBG(chainSettings.peakGainInDecibels);
+    
+    leftChain.process(leftContext);
+    rightChain.process(rightContext);
+    auto leftBlockProcessed = leftContext.getOutputBlock();
+    auto rightBlockProcessed = rightContext.getOutputBlock();
+    
+    audioSource.processProcessedData(leftBlockProcessed, "left");
+    audioSource.processProcessedData(rightBlockProcessed, "right");
+    
     
     
     
@@ -274,32 +285,62 @@ Audio::~Audio()
 
 void Audio::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
     {
-        if (bufferToFill.buffer->getNumChannels() > 0)
+        /*if (bufferToFill.buffer->getNumChannels() > 0)
         {
             auto* channelData = bufferToFill.buffer->getReadPointer (0, bufferToFill.startSample);
             
             
             
             for (auto i = 0; i < bufferToFill.numSamples; ++i)
-                pushNextSampleIntoFifo (channelData[i]);
-        }
+                pushNextSampleIntoFifo (channelData[i], );
+        }*/
     }
 
-void Audio::pushNextSampleIntoFifo (float sample) noexcept
+void Audio::processProcessedData(juce::dsp::AudioBlock<float> block, std::string channel)
+{
+    for (auto i = 0; i < block.getNumSamples(); ++i)
+        pushNextSampleIntoFifo (block.getSample(0, i), channel);
+    
+   
+}
+
+void Audio::pushNextSampleIntoFifo (float sample, std::string channel) noexcept
     {
-        if (fifoIndex == fftSize)
+        
+        if (channel == "left")
         {
-            if (! nextFFTBlockReady)
+            if (fifoIndex == fftSize)
             {
-                juce::zeromem (fftData, sizeof (fftData));
-                memcpy (fftData, fifo, sizeof (fifo));
-                nextFFTBlockReady = true;
+                if (! nextFFTBlockReady)
+                {
+                    juce::zeromem (leftfftData, sizeof (leftfftData));
+                    memcpy (leftfftData, leftfifo, sizeof (leftfifo));
+                    nextFFTBlockReady = true;
+                }
+     
+                fifoIndex = 0;
             }
- 
-            fifoIndex = 0;
+     
+            leftfifo[fifoIndex++] = sample;
         }
- 
-        fifo[fifoIndex++] = sample;
+        else if (channel== "right")
+        {
+            if (fifoIndex == fftSize)
+            {
+                if (! nextFFTBlockReady)
+                {
+                    juce::zeromem (rightfftData, sizeof (rightfftData));
+                    memcpy (rightfftData, rightfifo, sizeof (rightfifo));
+                    nextFFTBlockReady = true;
+                }
+     
+                fifoIndex = 0;
+            }
+     
+            rightfifo[fifoIndex++] = sample;
+        }
+        
+        
     }
 //
 
@@ -337,10 +378,13 @@ void getChainSettings(juce::AudioProcessorValueTreeState& apvts, ChainSettings &
     settings.highShelfGain = apvts.getRawParameterValue("High Shelf Peak Gain")->load();
     settings.highShelfQ = apvts.getRawParameterValue("High Shelf Peak Quality")->load();
     
+    
 }
 
 Coefficients makePeakFilter(const ChainSettings& chainSettings, double sampleRate)
 {
+    
+    
     return juce::dsp::IIR::Coefficients<float>::makePeakFilter(sampleRate,
                                                                chainSettings.peakFreq,
                                                                chainSettings.peakQuality,
@@ -354,8 +398,11 @@ void TemperatureSliderAudioProcessor::updatePeakFilter(const ChainSettings &chai
     leftChain.setBypassed<ChainPositions::Peak>(chainSettings.peakBypassed);
     rightChain.setBypassed<ChainPositions::Peak>(chainSettings.peakBypassed);
     
+    
+    
     updateCoefficients(leftChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
     updateCoefficients(rightChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
+    
 }
 
 
@@ -412,11 +459,20 @@ void TemperatureSliderAudioProcessor::updateFilters()
 {
     getChainSettings(apvts,chainSettings);
     updateLowCutFilters(chainSettings);
+    if (receivedInputFromCMap)
+    {
+        chainSettings.peakQuality = receivedPeakQ;
+        chainSettings.peakFreq = receivedPeakFreq;
+        chainSettings.peakGainInDecibels = receivedPeakGain;
+        //receivedInputFromCMap = false;
+    }
+    
     updatePeakFilter(chainSettings);
     updateHighCutFilters(chainSettings);
-    updateHighShelfFilter(chainSettings);
+    //updateHighShelfFilter(chainSettings);
     
-}
+    
+    }
 
 juce::AudioProcessorValueTreeState::ParameterLayout TemperatureSliderAudioProcessor::createParameterLayout()
 {
