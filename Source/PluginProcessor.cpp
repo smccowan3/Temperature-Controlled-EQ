@@ -115,8 +115,6 @@ void TemperatureSliderAudioProcessor::prepareToPlay (double sampleRate, int samp
         
         updateFilters();
         
-        leftChannelFifo.prepare(samplesPerBlock);
-        rightChannelFifo.prepare(samplesPerBlock);
         
         osc.initialise([](float x) { return std::sin(x); });
         
@@ -203,9 +201,10 @@ void TemperatureSliderAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
    
    leftChain.process(leftContext);
    rightChain.process(rightContext);
-   
-   leftChannelFifo.update(buffer);
-   rightChannelFifo.update(buffer);
+
+
+    
+    
     
 }
 
@@ -279,6 +278,8 @@ void Audio::getNextAudioBlock (const juce::AudioSourceChannelInfo& bufferToFill)
         {
             auto* channelData = bufferToFill.buffer->getReadPointer (0, bufferToFill.startSample);
             
+            
+            
             for (auto i = 0; i < bufferToFill.numSamples; ++i)
                 pushNextSampleIntoFifo (channelData[i]);
         }
@@ -327,10 +328,15 @@ void getChainSettings(juce::AudioProcessorValueTreeState& apvts, ChainSettings &
     settings.peakQuality = apvts.getRawParameterValue("Peak Quality")->load();
     settings.lowCutSlope = static_cast<Slope>(apvts.getRawParameterValue("LowCut Slope")->load());
     settings.highCutSlope = static_cast<Slope>(apvts.getRawParameterValue("HighCut Slope")->load());
-    
     settings.lowCutBypassed = apvts.getRawParameterValue("LowCut Bypassed")->load() > 0.5f;
     settings.peakBypassed = apvts.getRawParameterValue("Peak Bypassed")->load() > 0.5f;
     settings.highCutBypassed = apvts.getRawParameterValue("HighCut Bypassed")->load() > 0.5f;
+    
+    settings.highShelfBypassed = apvts.getRawParameterValue("HighShelf Bypassed")->load() > 0.5f;
+    settings.highShelfPeakFreq = apvts.getRawParameterValue("High Shelf Peak Freq")->load();
+    settings.highShelfGain = apvts.getRawParameterValue("High Shelf Peak Gain")->load();
+    settings.highShelfQ = apvts.getRawParameterValue("High Shelf Peak Quality")->load();
+    
 }
 
 Coefficients makePeakFilter(const ChainSettings& chainSettings, double sampleRate)
@@ -351,6 +357,9 @@ void TemperatureSliderAudioProcessor::updatePeakFilter(const ChainSettings &chai
     updateCoefficients(leftChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
     updateCoefficients(rightChain.get<ChainPositions::Peak>().coefficients, peakCoefficients);
 }
+
+
+
 
 void updateCoefficients(Coefficients &old, const Coefficients &replacements)
 {
@@ -384,13 +393,29 @@ void TemperatureSliderAudioProcessor::updateHighCutFilters(const ChainSettings &
     updateCutFilter(rightHighCut, highCutCoefficients, chainSettings.highCutSlope);
 }
 
+void TemperatureSliderAudioProcessor::updateHighShelfFilter(const ChainSettings & chainSettings)
+{
+    auto coefficients = makeHighShelfFilter(chainSettings, getSampleRate());
+    
+    leftChain.setBypassed<ChainPositions::HighShelf>(chainSettings.highShelfBypassed);
+    rightChain.setBypassed<ChainPositions::HighShelf>(chainSettings.highShelfBypassed);
+    
+    updateCoefficients(leftChain.get<ChainPositions::HighShelf>().coefficients, coefficients);
+    updateCoefficients(rightChain.get<ChainPositions::HighShelf>().coefficients, coefficients);
+    
+    
+}
+
+
+
 void TemperatureSliderAudioProcessor::updateFilters()
 {
     getChainSettings(apvts,chainSettings);
-    
     updateLowCutFilters(chainSettings);
     updatePeakFilter(chainSettings);
     updateHighCutFilters(chainSettings);
+    updateHighShelfFilter(chainSettings);
+    
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout TemperatureSliderAudioProcessor::createParameterLayout()
@@ -422,6 +447,21 @@ juce::AudioProcessorValueTreeState::ParameterLayout TemperatureSliderAudioProces
                                                            juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f),
                                                            1.f));
     
+    layout.add(std::make_unique<juce::AudioParameterFloat>("High Shelf Peak Freq",
+                                                           "High Shelf Peak Freq",
+                                                           juce::NormalisableRange<float>(20.f, 20000.f, 1.f, 0.25f),
+                                                           750.f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>("High Shelf Peak Gain",
+                                                           "High Shelf Peak Gain",
+                                                           juce::NormalisableRange<float>(-24.f, 24.f, 0.5f, 1.f),
+                                                           0.0f));
+    
+    layout.add(std::make_unique<juce::AudioParameterFloat>("High Shelf Peak Quality",
+                                                           "High Shelf Peak Quality",
+                                                           juce::NormalisableRange<float>(0.1f, 10.f, 0.05f, 1.f),
+                                                           1.f));
+    
     juce::StringArray stringArray;
     for( int i = 0; i < 4; ++i )
     {
@@ -433,10 +473,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout TemperatureSliderAudioProces
     
     layout.add(std::make_unique<juce::AudioParameterChoice>("LowCut Slope", "LowCut Slope", stringArray, 0));
     layout.add(std::make_unique<juce::AudioParameterChoice>("HighCut Slope", "HighCut Slope", stringArray, 0));
-    
     layout.add(std::make_unique<juce::AudioParameterBool>("LowCut Bypassed", "LowCut Bypassed", false));
     layout.add(std::make_unique<juce::AudioParameterBool>("Peak Bypassed", "Peak Bypassed", false));
     layout.add(std::make_unique<juce::AudioParameterBool>("HighCut Bypassed", "HighCut Bypassed", false));
+    layout.add(std::make_unique<juce::AudioParameterBool>("HighShelf Bypassed", "HighShelf Bypassed", false));
     layout.add(std::make_unique<juce::AudioParameterBool>("Analyzer Enabled", "Analyzer Enabled", true));
     
     return layout;

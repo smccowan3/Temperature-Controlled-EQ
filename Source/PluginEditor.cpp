@@ -51,6 +51,7 @@ void TemperatureSliderAudioProcessorEditor::paint (juce::Graphics& g)
     
     g.drawImage(colorMap,cMapStartX, cMapStartY, cMapXLength, cMapYLength, 0, 0, colorMap.getWidth(), colorMap.getHeight(), false);
     g.drawEllipse(xPos, yPos, 10, 10, 2);
+    currentParam = xPos;
     //g.fillAll(juce::Colours::darkcyan);
     g.setColour(juce::Colours::darkslategrey);
     g.fillRect(20, 20, WIDTH-40, cMapStartY -140);
@@ -103,10 +104,49 @@ void TemperatureSliderAudioProcessorEditor::drawCMapDot (const juce::MouseEvent 
     {
         xPos = event.x;
         yPos = event.y;
+        currentParam = xPos;
         cMapParam = event.x - cMapStartX;
         repaint();
     }
+    processParameter();
+}
+
+void TemperatureSliderAudioProcessorEditor::processParameter()
+{
+    int allowableNeutralRegion = 10;
+    int qMax = 18;
+    int gainMax = 12;
+    float scaleFactor;
     
+    if (xPos > cMapXLength/2+allowableNeutralRegion)
+    {
+        scaleFactor = (xPos - cMapXLength/2+allowableNeutralRegion)/cMapXLength;
+        DBG("hot. processing low boost.");
+        audioProcessorPtr.chainSettings.peakFreq = 500.f;
+        audioProcessorPtr.chainSettings.peakQuality = scaleFactor * qMax;
+        audioProcessorPtr.chainSettings.peakGainInDecibels = scaleFactor * gainMax;
+        
+        
+        
+    }
+    else if (xPos < cMapXLength/2-allowableNeutralRegion)
+    {
+        DBG("cold. processing high shelf");
+        scaleFactor = (cMapXLength/2-allowableNeutralRegion-xPos)/cMapXLength;
+        audioProcessorPtr.chainSettings.highShelfPeakFreq = 4000.f;
+        audioProcessorPtr.chainSettings.highShelfQ = scaleFactor * qMax;
+        audioProcessorPtr.chainSettings.highShelfGain = scaleFactor * gainMax;
+    }
+    else
+    {
+        DBG("neutral. doing nothing");
+        audioProcessorPtr.chainSettings.highShelfGain = 0;
+        audioProcessorPtr.chainSettings.peakGainInDecibels = 0;
+        
+        
+    }
+    
+    audioProcessorPtr.updateFilters();
 }
 
 void TemperatureSliderAudioProcessorEditor::drawNextFrameOfSpectrum()

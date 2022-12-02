@@ -44,12 +44,15 @@ public:
     int mouseY{0};
     bool isEntered{false};
     bool isClicked{false};
+    int currentParam = 0;
+    
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
     void timerCallback() override;
     void drawNextFrameOfSpectrum();
     void drawFrame (juce::Graphics& g);
+    void processParameter();
     
 private:
     // This reference is provided as a quick way for your editor to
