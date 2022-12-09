@@ -93,10 +93,74 @@
             filePath = "../../Source/PluginEditor.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "123"
-            endingLineNumber = "123"
+            startingLineNumber = "124"
+            endingLineNumber = "124"
             landmarkName = "TemperatureSliderAudioProcessorEditor::processParameter()"
             landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "D83C078C-5AE4-4722-B159-ECDBD0A2D7FE"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../Source/PluginEditor.h"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "37"
+            endingLineNumber = "37"
+            landmarkName = "TemperatureSliderAudioProcessorEditor"
+            landmarkType = "3">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "B648D32C-BFD1-4067-8575-2FC1A8161317"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../Source/PluginProcessor.cpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "452"
+            endingLineNumber = "452"
+            landmarkName = "TemperatureSliderAudioProcessor::updateHighShelfFilter(chainSettings)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "B648D32C-BFD1-4067-8575-2FC1A8161317 - 6c3967db3ea4d6c2"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "TemperatureSliderAudioProcessor::updateHighShelfFilter(ChainSettings const&amp;)"
+                  moduleName = "TemperatureSlider"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/stuartmccowan/Documents/JUCE%20Programming/TemperatureSlider/Temperature-Controlled-EQ/Source/PluginProcessor.cpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "451"
+                  endingLineNumber = "451"
+                  offsetFromSymbolStart = "124">
+               </Location>
+               <Location
+                  uuid = "B648D32C-BFD1-4067-8575-2FC1A8161317 - 6c3967db3ea4d6fd"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "TemperatureSliderAudioProcessor::updateHighShelfFilter(ChainSettings const&amp;)"
+                  moduleName = "TemperatureSlider"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/stuartmccowan/Documents/JUCE%20Programming/TemperatureSlider/Temperature-Controlled-EQ/Source/PluginProcessor.cpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "450"
+                  endingLineNumber = "450"
+                  offsetFromSymbolStart = "124">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

@@ -72,6 +72,8 @@ void getChainSettings(juce::AudioProcessorValueTreeState& apvts, ChainSettings &
 
 using Filter = juce::dsp::IIR::Filter<float>;
 
+using BaseFilter = juce::IIRFilter;
+
 using CutFilter = juce::dsp::ProcessorChain<Filter, Filter, Filter, Filter>;
 
 using MonoChain = juce::dsp::ProcessorChain<CutFilter, Filter, CutFilter, Filter>;

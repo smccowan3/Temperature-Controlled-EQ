@@ -112,7 +112,7 @@ void TemperatureSliderAudioProcessor::prepareToPlay (double sampleRate, int samp
         
         leftChain.prepare(spec);
         rightChain.prepare(spec);
-        
+        getChainSettings(apvts,chainSettings);
         updateFilters();
         
         
@@ -122,7 +122,7 @@ void TemperatureSliderAudioProcessor::prepareToPlay (double sampleRate, int samp
         osc.prepare(spec);
         osc.setFrequency(440);
 
-    
+       
     
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
@@ -202,9 +202,9 @@ void TemperatureSliderAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
    juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
    
     DBG("updated settings are: ");
-    DBG(chainSettings.peakQuality);
-    DBG(chainSettings.peakFreq);
-    DBG(chainSettings.peakGainInDecibels);
+    DBG(chainSettings.highShelfQ);
+    DBG(chainSettings.highShelfPeakFreq);
+    DBG(chainSettings.highShelfGain);
     
     leftChain.process(leftContext);
     rightChain.process(rightContext);
@@ -378,6 +378,9 @@ void getChainSettings(juce::AudioProcessorValueTreeState& apvts, ChainSettings &
     settings.highShelfGain = apvts.getRawParameterValue("High Shelf Peak Gain")->load();
     settings.highShelfQ = apvts.getRawParameterValue("High Shelf Peak Quality")->load();
     
+    DBG("at init Q is: ");
+    DBG(settings.highShelfQ);
+    
     
 }
 
@@ -457,22 +460,14 @@ void TemperatureSliderAudioProcessor::updateHighShelfFilter(const ChainSettings 
 
 void TemperatureSliderAudioProcessor::updateFilters()
 {
-    getChainSettings(apvts,chainSettings);
-    updateLowCutFilters(chainSettings);
-    if (receivedInputFromCMap)
-    {
-        chainSettings.peakQuality = receivedPeakQ;
-        chainSettings.peakFreq = receivedPeakFreq;
-        chainSettings.peakGainInDecibels = receivedPeakGain;
-        //receivedInputFromCMap = false;
-    }
     
+    updateLowCutFilters(chainSettings);
     updatePeakFilter(chainSettings);
     updateHighCutFilters(chainSettings);
-    //updateHighShelfFilter(chainSettings);
+    updateHighShelfFilter(chainSettings);
     
     
-    }
+}
 
 juce::AudioProcessorValueTreeState::ParameterLayout TemperatureSliderAudioProcessor::createParameterLayout()
 {

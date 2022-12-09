@@ -38,7 +38,7 @@ public:
     int cMapParam{1};
     
     
-    int xPos{1};
+    int xPos{400};
     int yPos{cMapStartY+1};
     int mouseX{0};
     int mouseY{0};

@@ -116,6 +116,7 @@ void TemperatureSliderAudioProcessorEditor::processParameter()
     int allowableNeutralRegion = 10;
     int qMax = 18;
     int gainMax = 12;
+    int gainFactorMax = 1;
     float scaleFactor;
     
     if (xPos > cMapXLength/2+allowableNeutralRegion)
@@ -123,31 +124,44 @@ void TemperatureSliderAudioProcessorEditor::processParameter()
         scaleFactor = (xPos - allowableNeutralRegion - cMapXLength/2);
         scaleFactor /= (cMapXLength/2);
         DBG("hot. processing low boost.");
-        audioProcessorPtr.receivedPeakFreq = 500.f;
-        audioProcessorPtr.receivedPeakQ = qMax -(scaleFactor * qMax) + 0.001;
-        audioProcessorPtr.receivedPeakGain = scaleFactor * gainMax;
-        audioProcessorPtr.receivedInputFromCMap = true;
+        audioProcessorPtr.chainSettings.highShelfBypassed = true;
+        audioProcessorPtr.chainSettings.peakBypassed = false;
+        audioProcessorPtr.chainSettings.peakFreq = 500.f;
+        audioProcessorPtr.chainSettings.peakQuality = qMax -(scaleFactor * qMax) + 0.001;
+        audioProcessorPtr.chainSettings.peakGainInDecibels = scaleFactor * gainMax;
+        //audioProcessorPtr.receivedInputFromCMap = true;
+        
+        audioProcessorPtr.chainSettings.highShelfPeakFreq = 1;
+        audioProcessorPtr.chainSettings.highShelfQ = 1;
+        audioProcessorPtr.chainSettings.highShelfGain = 1;
         
         
     }
     else if (xPos < cMapXLength/2-allowableNeutralRegion)
     {
         DBG("cold. processing high shelf");
-        scaleFactor = (cMapXLength/2-allowableNeutralRegion-xPos)/cMapXLength;
+        DBG(xPos);
+        scaleFactor = cMapXLength/2 - xPos - allowableNeutralRegion;
+        scaleFactor /= (cMapXLength/2);
+        DBG(scaleFactor);
+        audioProcessorPtr.chainSettings.highShelfBypassed = false;
+        audioProcessorPtr.chainSettings.peakBypassed = true;
         audioProcessorPtr.chainSettings.highShelfPeakFreq = 4000.f;
         audioProcessorPtr.chainSettings.highShelfQ = scaleFactor * qMax;
-        audioProcessorPtr.chainSettings.highShelfGain = scaleFactor * gainMax;
+        audioProcessorPtr.chainSettings.highShelfGain = 1+ scaleFactor * gainFactorMax;
         
-        audioProcessorPtr.receivedPeakFreq = 1;
-        audioProcessorPtr.receivedPeakQ = 1;
-        audioProcessorPtr.receivedPeakGain = 1;
-        audioProcessorPtr.receivedInputFromCMap = true;
+//        audioProcessorPtr.chainSettings.peakFreq = 1;
+//        audioProcessorPtr.chainSettings.peakQuality = 1;
+//        audioProcessorPtr.chainSettings.peakGainInDecibels= 0;
+        //audioProcessorPtr.receivedInputFromCMap = true;
     }
     else
     {
         DBG("neutral. doing nothing");
-        audioProcessorPtr.chainSettings.highShelfGain = 0;
-        audioProcessorPtr.chainSettings.peakGainInDecibels = 0;
+        audioProcessorPtr.chainSettings.highShelfBypassed = true;
+        audioProcessorPtr.chainSettings.peakBypassed = true;
+        
+        
         
         
     }
