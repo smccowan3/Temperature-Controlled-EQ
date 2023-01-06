@@ -45,6 +45,8 @@ public:
     bool isEntered{false};
     bool isClicked{false};
     int currentParam = 0;
+    juce::Label trackNameIn;
+    juce::TextButton setBtn;
     
     //==============================================================================
     void paint (juce::Graphics&) override;

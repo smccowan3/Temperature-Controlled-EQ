@@ -15,16 +15,26 @@ juce::Image colorMap = juce::ImageFileFormat::loadFrom(juce::File("/Users/stuart
 
 
 
-
 //==============================================================================
 TemperatureSliderAudioProcessorEditor::TemperatureSliderAudioProcessorEditor (TemperatureSliderAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessorPtr (p)
+: AudioProcessorEditor (&p), trackNameIn("Track Name In", "Enter track name here"), setBtn("Set"), audioProcessorPtr (p)
 {
     DBG("audio helper starting");
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (WIDTH, HEIGHT);
     startTimerHz(30);
+    addAndMakeVisible(trackNameIn);
+    trackNameIn.setBounds(0, 500, 300, 80);
+    trackNameIn.setEditable (true);
+    trackNameIn.setColour (juce::Label::backgroundColourId, juce::Colours::darkgrey);
+    trackNameIn.setColour (juce::Label::outlineWhenEditingColourId, juce::Colours::purple);
+    addAndMakeVisible(setBtn);
+    setBtn.setBounds(getWidth()/2+ 230, getHeight()-100, 100, 80);
+    setBtn.setButtonText("SET");
+    setBtn.setHelpText("Click this when you are ready to save in database");
+    trackNameIn.setColour (juce::TextButton::buttonColourId, juce::Colours::darkgrey);
+    
 }
 
 TemperatureSliderAudioProcessorEditor::~TemperatureSliderAudioProcessorEditor()
@@ -50,6 +60,7 @@ void TemperatureSliderAudioProcessorEditor::paint (juce::Graphics& g)
     g.drawText ("Y: " + std::to_string(yPos), 150, 720, 200, 100, juce::Justification::centred, 1);
     
     g.drawImage(colorMap,cMapStartX, cMapStartY, cMapXLength, cMapYLength, 0, 0, colorMap.getWidth(), colorMap.getHeight(), false);
+    g.setColour (juce::Colours::black);
     g.drawEllipse(xPos, yPos, 10, 10, 2);
     currentParam = xPos;
     //g.fillAll(juce::Colours::darkcyan);
@@ -65,6 +76,8 @@ void TemperatureSliderAudioProcessorEditor::paint (juce::Graphics& g)
     g.setOpacity (1.0f);
     g.setColour (juce::Colours::white);
     drawFrame(g);
+    
+    
 }
 void TemperatureSliderAudioProcessorEditor::resized()
 {
@@ -116,7 +129,7 @@ void TemperatureSliderAudioProcessorEditor::processParameter()
     int allowableNeutralRegion = 10;
     int qMax = 18;
     int gainMax = 12;
-    int gainFactorMax = 1;
+    float gainFactorMax = 1.5;
     float scaleFactor;
     
     if (xPos > cMapXLength/2+allowableNeutralRegion)
