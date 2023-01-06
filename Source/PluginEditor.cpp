@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include<fstream>
 
 std::string path = "../../Source/";
 
@@ -34,6 +35,9 @@ TemperatureSliderAudioProcessorEditor::TemperatureSliderAudioProcessorEditor (Te
     setBtn.setButtonText("SET");
     setBtn.setHelpText("Click this when you are ready to save in database");
     trackNameIn.setColour (juce::TextButton::buttonColourId, juce::Colours::darkgrey);
+
+    trackNameIn.onTextChange =[this](){setText();};
+    setBtn.onClick = [this](){processString();};
     
 }
 
@@ -43,6 +47,13 @@ TemperatureSliderAudioProcessorEditor::~TemperatureSliderAudioProcessorEditor()
 }
 
 //==============================================================================
+
+void TemperatureSliderAudioProcessorEditor::setText()
+{
+    trackname = trackNameIn.getText();
+    
+}
+
 void TemperatureSliderAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
@@ -123,6 +134,7 @@ void TemperatureSliderAudioProcessorEditor::drawCMapDot (const juce::MouseEvent 
     }
     processParameter();
 }
+
 
 void TemperatureSliderAudioProcessorEditor::processParameter()
 {
@@ -251,6 +263,44 @@ void TemperatureSliderAudioProcessorEditor::timerCallback()
         audioProcessorPtr.audioSource.nextFFTBlockReady = false;
         repaint();
     }
+
+    
+}
+
+void TemperatureSliderAudioProcessorEditor::processString()
+{
+    std::string output;
+    
+    output.append(trackname.toStdString());
+    output.append(",");
+    output.append(std::to_string(xPos));
+    
+    
+    writeFile(output);
+}
+
+
+void TemperatureSliderAudioProcessorEditor::writeFile(std::string input)
+{
+    std::string home{std::getenv("HOME")};
+    std::string location = home + "test.txt";
+    DBG("Writing file");
+    std::ofstream outfile;
+    outfile.open(location, std::ios_base::app);
+    if (outfile)
+    {
+        outfile << input;
+        outfile.close();
+    }
+    else{
+        DBG("file doesn't exist");
+        std::ofstream outfileNew("test.txt");
+        outfileNew << input;
+        outfileNew.close();
+        outfile.close();
+        
+    }
+    
 }
 
 void TemperatureSliderAudioProcessorEditor::drawFrame (juce::Graphics& g)

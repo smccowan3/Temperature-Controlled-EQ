@@ -55,6 +55,10 @@ public:
     void drawNextFrameOfSpectrum();
     void drawFrame (juce::Graphics& g);
     void processParameter();
+    void processString();
+    void writeFile(std::string input);
+    juce::String trackname;
+    void setText();
     
 private:
     // This reference is provided as a quick way for your editor to
@@ -64,4 +68,6 @@ private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TemperatureSliderAudioProcessorEditor)
 
 };
+
+
 

@@ -200,11 +200,7 @@ void TemperatureSliderAudioProcessor::processBlock (juce::AudioBuffer<float>& bu
    
    juce::dsp::ProcessContextReplacing<float> leftContext(leftBlock);
    juce::dsp::ProcessContextReplacing<float> rightContext(rightBlock);
-   
-    DBG("updated settings are: ");
-    DBG(chainSettings.highShelfQ);
-    DBG(chainSettings.highShelfPeakFreq);
-    DBG(chainSettings.highShelfGain);
+
     
     leftChain.process(leftContext);
     rightChain.process(rightContext);
