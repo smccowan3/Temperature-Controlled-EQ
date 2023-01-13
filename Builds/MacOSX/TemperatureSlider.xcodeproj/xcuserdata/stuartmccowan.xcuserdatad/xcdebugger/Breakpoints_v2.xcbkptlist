@@ -163,5 +163,113 @@
             </Locations>
          </BreakpointContent>
       </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "2AD09AB9-BF48-4C9B-A19D-74FFC0714E84"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "../../Source/PluginEditor.cpp"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "301"
+            endingLineNumber = "301"
+            landmarkName = "TemperatureSliderAudioProcessorEditor::writeFile(trackname, xPos)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "2AD09AB9-BF48-4C9B-A19D-74FFC0714E84 - 6938765c428ab6d0"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "TemperatureSliderAudioProcessorEditor::writeFile(std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt;)"
+                  moduleName = "TemperatureSlider"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/stuartmccowan/Documents/JUCE%20Programming/TemperatureSlider/Temperature-Controlled-EQ/Source/PluginEditor.cpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "304"
+                  endingLineNumber = "304"
+                  offsetFromSymbolStart = "500">
+               </Location>
+               <Location
+                  uuid = "2AD09AB9-BF48-4C9B-A19D-74FFC0714E84 - 6938765c428ab6d0"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "TemperatureSliderAudioProcessorEditor::writeFile(std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt;)"
+                  moduleName = "TemperatureSlider"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/stuartmccowan/Documents/JUCE%20Programming/TemperatureSlider/Temperature-Controlled-EQ/Source/PluginEditor.cpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "304"
+                  endingLineNumber = "304"
+                  offsetFromSymbolStart = "844">
+               </Location>
+               <Location
+                  uuid = "2AD09AB9-BF48-4C9B-A19D-74FFC0714E84 - 6938765c428ab6b1"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "TemperatureSliderAudioProcessorEditor::writeFile(std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt;)"
+                  moduleName = "TemperatureSlider"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/stuartmccowan/Documents/JUCE%20Programming/TemperatureSlider/Temperature-Controlled-EQ/Source/PluginEditor.cpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "305"
+                  endingLineNumber = "305"
+                  offsetFromSymbolStart = "572">
+               </Location>
+               <Location
+                  uuid = "2AD09AB9-BF48-4C9B-A19D-74FFC0714E84 - 6938765c428ab6b1"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "TemperatureSliderAudioProcessorEditor::writeFile(std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt;)"
+                  moduleName = "TemperatureSlider"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/stuartmccowan/Documents/JUCE%20Programming/TemperatureSlider/Temperature-Controlled-EQ/Source/PluginEditor.cpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "305"
+                  endingLineNumber = "305"
+                  offsetFromSymbolStart = "964">
+               </Location>
+               <Location
+                  uuid = "2AD09AB9-BF48-4C9B-A19D-74FFC0714E84 - 6938765c428ab6b1"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "TemperatureSliderAudioProcessorEditor::writeFile(std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt;)"
+                  moduleName = "TemperatureSlider"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/stuartmccowan/Documents/JUCE%20Programming/TemperatureSlider/Temperature-Controlled-EQ/Source/PluginEditor.cpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "305"
+                  endingLineNumber = "305"
+                  offsetFromSymbolStart = "448">
+               </Location>
+               <Location
+                  uuid = "2AD09AB9-BF48-4C9B-A19D-74FFC0714E84 - 6938765c428ab6b1"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "TemperatureSliderAudioProcessorEditor::writeFile(std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt;, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt; &gt;)"
+                  moduleName = "TemperatureSlider"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/stuartmccowan/Documents/JUCE%20Programming/TemperatureSlider/Temperature-Controlled-EQ/Source/PluginEditor.cpp"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "305"
+                  endingLineNumber = "305"
+                  offsetFromSymbolStart = "784">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

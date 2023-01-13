@@ -269,37 +269,36 @@ void TemperatureSliderAudioProcessorEditor::timerCallback()
 
 void TemperatureSliderAudioProcessorEditor::processString()
 {
-    std::string output;
+//    std::string output;
+//
+//    output.append(trackname.toStdString());
+//    output.append(",");
+//    output.append(std::to_string(xPos));
     
-    output.append(trackname.toStdString());
-    output.append(",");
-    output.append(std::to_string(xPos));
     
-    
-    writeFile(output);
+    writeFile(trackname.toStdString(), std::to_string(xPos));
 }
 
 
-void TemperatureSliderAudioProcessorEditor::writeFile(std::string input)
+void TemperatureSliderAudioProcessorEditor::writeFile(std::string trackname, std::string xPos)
 {
-    std::string home{std::getenv("HOME")};
-    std::string location = home + "test.txt";
-    DBG("Writing file");
-    std::ofstream outfile;
-    outfile.open(location, std::ios_base::app);
-    if (outfile)
-    {
-        outfile << input;
-        outfile.close();
-    }
-    else{
-        DBG("file doesn't exist");
-        std::ofstream outfileNew("test.txt");
-        outfileNew << input;
-        outfileNew.close();
-        outfile.close();
-        
-    }
+    // adapted from https://docs.juce.com/master/classXmlElement.html#details
+    //more on filepath at https://docs.juce.com/master/classFile.html#a3e19cafabb03c5838160263a6e76313d
+
+     auto filePath = juce::File::getSpecialLocation (juce::File::userHomeDirectory).getChildFile ("test123.xml");
+    
+    
+    
+    juce::XmlElement output ("DATA");
+    //juce::XmlElement* datainput = new juce::XmlElement datainput ("Trial_Data");
+    output.setAttribute("TRACKNAME", trackname);
+    output.setAttribute("TEMPERATURE", xPos );
+    //output.addChildElement(datainput);
+    juce::File file ("../text.xml");
+    juce::FileOutputStream outputstream (file);
+    output.writeTo(filePath, juce::XmlElement::TextFormat());
+    DBG("wrote file");
+    
     
 }
 

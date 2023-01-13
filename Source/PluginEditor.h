@@ -56,7 +56,7 @@ public:
     void drawFrame (juce::Graphics& g);
     void processParameter();
     void processString();
-    void writeFile(std::string input);
+    void writeFile(std::string trackname, std::string xPos);
     juce::String trackname;
     void setText();
     
