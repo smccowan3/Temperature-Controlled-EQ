@@ -173,8 +173,8 @@
             filePath = "../../Source/PluginEditor.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "301"
-            endingLineNumber = "301"
+            startingLineNumber = "312"
+            endingLineNumber = "312"
             landmarkName = "TemperatureSliderAudioProcessorEditor::writeFile(trackname, xPos)"
             landmarkType = "7">
             <Locations>

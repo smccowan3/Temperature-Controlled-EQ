@@ -285,19 +285,30 @@ void TemperatureSliderAudioProcessorEditor::writeFile(std::string trackname, std
     // adapted from https://docs.juce.com/master/classXmlElement.html#details
     //more on filepath at https://docs.juce.com/master/classFile.html#a3e19cafabb03c5838160263a6e76313d
 
-     auto filePath = juce::File::getSpecialLocation (juce::File::userHomeDirectory).getChildFile ("test123.xml");
+     auto filePath = juce::File::getSpecialLocation (juce::File::userHomeDirectory).getChildFile ("temperature_data.xml");
+     if (filePath.exists())
+     {
+         juce::XmlDocument mydocument (filePath);
+         auto mainElement = mydocument.getDocumentElement();
+         juce::XmlElement datainput ("DATA");
+         datainput.setAttribute("TRACK_NAME", trackname);
+         datainput.setAttribute("TEMPERATURE", xPos );
+         mainElement->addChildElement(new juce::XmlElement (datainput));
+         mainElement->writeTo(filePath, juce::XmlElement::TextFormat());
+         DBG("wrote file while reading old one");
+     }
+     else{
+         juce::XmlElement output ("TRACK_TEMPERATURE_DATA");
+         juce::String jtrack (trackname);
+         juce::XmlElement datainput ("DATA");
+         datainput.setAttribute("TRACK_NAME", trackname);
+         datainput.setAttribute("TEMPERATURE", xPos );
+         output.addChildElement(new juce::XmlElement (datainput));
+         output.writeTo(filePath, juce::XmlElement::TextFormat());
+         DBG("wrote new file");
+     }
+   
     
-    
-    
-    juce::XmlElement output ("DATA");
-    //juce::XmlElement* datainput = new juce::XmlElement datainput ("Trial_Data");
-    output.setAttribute("TRACKNAME", trackname);
-    output.setAttribute("TEMPERATURE", xPos );
-    //output.addChildElement(datainput);
-    juce::File file ("../text.xml");
-    juce::FileOutputStream outputstream (file);
-    output.writeTo(filePath, juce::XmlElement::TextFormat());
-    DBG("wrote file");
     
     
 }
